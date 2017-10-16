@@ -13,9 +13,11 @@
 #include <errno.h>
 #include <vector>
 #include <cstring>
+#ifndef WIN32
 #include <io.h>
-#include <fstream>
 #include "AAA.h"
+#endif
+#include <fstream>
 #include "MP3tag.h"
 
 
@@ -28,7 +30,7 @@ void open_dir(char* dir_name, std::vector<std::string>& file_names) {
 	string dir_name_ = string(dir_name);
 	vector<string> files_;
 int getdir(string dir, vector<string> &files) {
-#ifndef WIN32
+#ifndef _unix_
 	DIR *dp;
 	struct dirent *dirp;
 	if ((dp = opendir(dir.c_str())) == NULL) {
