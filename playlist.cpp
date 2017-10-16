@@ -13,13 +13,22 @@
 #include <errno.h>
 #include <vector>
 #include <cstring>
-#include <sys/param.h>
-#include <unistd.h>
+#include <io.h>
 #include <fstream>
+#include "AAA.h"
 #include "MP3tag.h"
 
+
 using namespace std;
+void open_dir(char* dir_name, std::vector<std::string>& file_names) {
+	if (dir_name == NULL) {
+		return;
+	}
+
+	string dir_name_ = string(dir_name);
+	vector<string> files_;
 int getdir(string dir, vector<string> &files) {
+#ifndef WIN32
 	DIR *dp;
 	struct dirent *dirp;
 	if ((dp = opendir(dir.c_str())) == NULL) {
@@ -32,10 +41,53 @@ int getdir(string dir, vector<string> &files) {
 	}
 	closedir(dp);
 	return 0;
+#else
+	HANDLE hFind = INVALID_HANDLE_VALUE;
+	WIN32_FIND_DATA fdata;
+
+	if (dir_name_[dir_name_.size() - 1] == '\\' || dir_name_[dir_name_.size() - 1] == '/') {
+		dir_name_ = dir_name_.substr(0, dir_name_.size() - 1);
+	}
+
+	hFind = FindFirstFile(string(dir_name_).append("\\*").c_str(), &fdata);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			if (strcmp(fdata.cFileName, ".") != 0 &&
+				strcmp(fdata.cFileName, "..") != 0)
+			{
+				if (fdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+				{
+					continue; // a diretory
+				}
+				else
+				{
+					files_.push_back(fdata.cFileName);
+				}
+			}
+		} while (FindNextFile(hFind, &fdata) != 0);
+	}
+	else {
+		cerr << "can't open directory\n";
+		return;
+	}
+
+	if (GetLastError() != ERROR_NO_MORE_FILES)
+	{
+		FindClose(hFind);
+		cerr << "some other error with opening directory: " << GetLastError() << endl;
+		return;
+	}
+
+	FindClose(hFind);
+	hFind = INVALID_HANDLE_VALUE;
+#endif 
+	file_names.clear();
+	file_names = files_;
 }
 void ls() {
-	DIR *dir = opendir(".");
-	if (dir) {
+	DIR *dir = opendir(".");	if (dir) {
 		struct dirent *ent;
 		while ((ent = readdir(dir)) != NULL) {
 			cout << (ent->d_name) << endl;
