@@ -1,10 +1,15 @@
 #include <iostream>
 #include <stdio.h>
-//#include " /usr/include/x86_64-linux-gnu/sys/stat.h"
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef __unix__
 #include <dirent.h>
+#else
+#include <direct.h>
+#include <windows.h>
+#define MAXPATHLEN 4096
+#endif
 #include <errno.h>
 #include <vector>
 #include <cstring>
@@ -77,7 +82,11 @@ void cd(string path) {
 }
 void pwd() {
 	char buffer[MAXPATHLEN];
+#ifdef __unix__
 	char *path = getcwd(buffer, MAXPATHLEN);
+#else
+	char *path = _getcwd(buffer, MAXPATHLEN);
+#endif
 	if (!path) {
 		cout << "error" << endl;
 	} else {
@@ -87,13 +96,13 @@ void pwd() {
 	}
 }
 int readmp3(const char *path) {
-	 ofstream fout("info.txt");
+	ofstream fout("info.txt");
 	int fileNameLength = 1024;
 	int mp3TagSize = 128;
 	TAGdata tagStruct;
 	//char *fileName=new char[fileNameLength + 1];
-	char* fileName=new char[fileNameLength+1];
-	fileName=(char*)path;
+	char* fileName = new char[fileNameLength + 1];
+	fileName = (char*) path;
 	ifstream mp3File;
 	char buffer[mp3TagSize + 1];
 	//strcpy(path, fileName.c_str());
@@ -121,14 +130,14 @@ int readmp3(const char *path) {
 		cerr << "Could not read after seeking" << endl;
 		return 1;
 	}
-	fout <<"tag:"<< tagStruct.tag << endl;
-	fout <<"title:"<< tagStruct.title << endl;
-	fout <<"artist:"<< tagStruct.artist << endl;
-	fout <<"album:"<< tagStruct.album << endl;
-	fout <<"year:"<< tagStruct.year << endl;
-	fout <<"comment:"<< tagStruct.comment << endl;
-	fout <<"genre:"<< tagStruct.genre << endl;
-	fout <<endl;
+	fout << "tag:" << tagStruct.tag << endl;
+	fout << "title:" << tagStruct.title << endl;
+	fout << "artist:" << tagStruct.artist << endl;
+	fout << "album:" << tagStruct.album << endl;
+	fout << "year:" << tagStruct.year << endl;
+	fout << "comment:" << tagStruct.comment << endl;
+	fout << "genre:" << tagStruct.genre << endl;
+	fout << endl;
 	mp3File.close();
 }
 int main() {
@@ -145,8 +154,8 @@ int main() {
 
 		}
 		if (command.find("info") == 0) {
-		//	const char *d=();
-		//	cout<<command.substr(command.find(" ") + 1).c_str();
+			//	const char *d=();
+			//	cout<<command.substr(command.find(" ") + 1).c_str();
 			readmp3(command.substr(command.find(" ") + 1).c_str());
 		}
 
