@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef __unix__
+#ifdef _unix_
 #include <dirent.h>
+#include <sys/param.h>
 #else
 #include <direct.h>
 #include <windows.h>
@@ -13,22 +14,18 @@
 #include <errno.h>
 #include <vector>
 #include <cstring>
-#ifndef WIN32
-#include <io.h>
-#include "AAA.h"
-#endif
 #include <fstream>
 #include "MP3tag.h"
 
 
 using namespace std;
-void open_dir(char* dir_name, std::vector<std::string>& file_names) {
-	if (dir_name == NULL) {
-		return;
-	}
-
-	string dir_name_ = string(dir_name);
-	vector<string> files_;
+//void open_dir(char* dir_name, std::vector<std::string>& file_names) {
+//	if (dir_name == NULL) {
+//		return;
+//	}
+//
+//	string dir_name_ = string(dir_name);
+//	vector<string> files_;
 int getdir(string dir, vector<string> &files) {
 #ifndef _unix_
 	DIR *dp;
@@ -87,8 +84,10 @@ int getdir(string dir, vector<string> &files) {
 #endif 
 	file_names.clear();
 	file_names = files_;
+	
 }
 void ls() {
+#ifdef _unix_
 	DIR *dir = opendir(".");	if (dir) {
 		struct dirent *ent;
 		while ((ent = readdir(dir)) != NULL) {
@@ -106,6 +105,9 @@ void ls() {
 	 for (unsigned int i = 0; i < files.size(); i++) {
 	 cout << files[i] << endl;
 	 }*/
+#else
+
+#endif
 }
 void cd(string path) {
 	int rc = chdir(path.c_str());
@@ -136,7 +138,7 @@ void cd(string path) {
 }
 void pwd() {
 	char buffer[MAXPATHLEN];
-#ifdef __unix__
+#ifndef __unix__
 	char *path = getcwd(buffer, MAXPATHLEN);
 #else
 	char *path = _getcwd(buffer, MAXPATHLEN);
