@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -28,7 +28,7 @@
 #include <vfw.h>
 #include "Playlist.h"
 
-
+#ifdef _unix_
 using namespace std;
 void open_dir(char* dir_name, std::vector<std::string>& file_names) {
 	if (dir_name == NULL) {
@@ -37,69 +37,122 @@ void open_dir(char* dir_name, std::vector<std::string>& file_names) {
 
 	string dir_name_ = string(dir_name);
 	vector<string> files_;
-int getdir(string dir, vector <string> &files) {
-#ifdef _unix_
-	DIR *dp;
-	struct dirent *dirp;
-	if ((dp = opendir(dir.c_str())) == NULL) {
-		cout << "Error(" << errno << ") opening " << dir << endl;
-		return errno;
-	}
+	int getdir(string dir, vector <string> &files) {
 
-	while ((dirp = readdir(dp)) != NULL) {
-		files.push_back(string(dirp->d_name));
+		DIR *dp;
+		struct dirent *dirp;
+		if ((dp = opendir(dir.c_str())) == NULL) {
+			cout << "Error(" << errno << ") opening " << dir << endl;
+			return errno;
+		}
+
+		while ((dirp = readdir(dp)) != NULL) {
+			files.push_back(string(dirp->d_name));
+		}
+		closedir(dp);
+		return 0;
 	}
-	closedir(dp);
-	return 0;
 #else
+//wstring cd(string command, string &path)
+//{
+//	if (!path.empty() && command.find("C:") && command.find("D:"))
+//	{
+//		path.pop_back();
+//		cout << path << endl;
+//		if (command.find("..") == 0)
+//		{
+//			path.pop_back();
+//			path = path.substr(0, path.rfind("\\"));
+//		}
+//		else
+//		{
+//			path += command;
+//		}
+//	}
+//	else
+//	{
+//		path = command;
+//	}
+//	path += "\\";
+//
+//	cout << path << endl;
+//	path.push_back('*');
+//	return wstring(path.begin(), path.end());
+//}
+wstring cd(string directory,string operation)
+{
+	string buffer = directory;
+	WIN32_FIND_DATA ffd;
 	HANDLE hFind = INVALID_HANDLE_VALUE;
-	WIN32_FIND_DATA fdata;
+	buffer += operation.substr(3, operation.length() - 4);
+	buffer += "\\*";
+	hFind = FindFirstFile(buffer.c_str(), &ffd);
 
-	if (dir_name_[dir_name_.size() - 1] == '\\' || dir_name_[dir_name_.size() - 1] == '/') {
-		dir_name_ = dir_name_.substr(0, dir_name_.size() - 1);
+	if (INVALID_HANDLE_VALUE == hFind)
+	{
+		cout << "We couldn't find such directory" << endl;
+
 	}
 
-	hFind = FindFirstFile(string(dir_name_).append("\\*").c_str(), &fdata);
-	if (hFind != INVALID_HANDLE_VALUE)
+	if (operation.find("..") == 3)
 	{
-		do
+		if (directory.length() <= 4)
 		{
-			if (strcmp(fdata.cFileName, ".") != 0 &&
-				strcmp(fdata.cFileName, "..") != 0)
-			{
-				if (fdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-				{
-					continue; // a diretory
-				}
-				else
-				{
-					files_.push_back(fdata.cFileName);
-				}
-			}
-		} while (FindNextFile(hFind, &fdata) != 0);
+			cout << "Operations can't be performed" << endl;
+		}
+		else
+		{
+			directory.erase((directory.substr(0, directory.length() - 2)).rfind("\\") + 1);
+		}
 	}
-	else {
-		cerr << "can't open directory\n";
-		return;
-	}
-
-	if (GetLastError() != ERROR_NO_MORE_FILES)
-	{
-		FindClose(hFind);
-		cerr << "some other error with opening directory: " << GetLastError() << endl;
-		return;
-	}
-
-	FindClose(hFind);
-	hFind = INVALID_HANDLE_VALUE;
-#endif 
-	file_names.clear();
-	file_names = files_;
-	return;
-	
+	return 0;
 }
-void ls() {
+//	HANDLE hFind = INVALID_HANDLE_VALUE;
+//	WIN32_FIND_DATA fdata;
+//
+//	if (dir_name_[dir_name_.size() - 1] == '\\' || dir_name_[dir_name_.size() - 1] == '/') {
+//		dir_name_ = dir_name_.substr(0, dir_name_.size() - 1);
+//	}
+//
+//	hFind = FindFirstFile(string(dir_name_).append("\\*").c_str(), &fdata);
+//	if (hFind != INVALID_HANDLE_VALUE)
+//	{
+//		do
+//		{
+//			if (strcmp(fdata.cFileName, ".") != 0 &&
+//				strcmp(fdata.cFileName, "..") != 0)
+//			{
+//				if (fdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+//				{
+//					continue; // a diretory
+//				}
+//				else
+//				{
+//					files_.push_back(fdata.cFileName);
+//				}
+//			}
+//		} while (FindNextFile(hFind, &fdata) != 0);
+//	}
+//	else {
+//		cerr << "can't open directory\n";
+//		return;
+//	}
+//
+//	if (GetLastError() != ERROR_NO_MORE_FILES)
+//	{
+//		FindClose(hFind);
+//		cerr << "some other error with opening directory: " << GetLastError() << endl;
+//		return;
+//	}
+//
+//	FindClose(hFind);
+//	hFind = INVALID_HANDLE_VALUE;
+#endif 
+	
+
 #ifdef _unix_
+void ls() {
+
 	DIR *dir = opendir(".");	if (dir) {
 		struct dirent *ent;
 		while ((ent = readdir(dir)) != NULL) {
@@ -117,37 +170,61 @@ void ls() {
 	 for (unsigned int i = 0; i < files.size(); i++) {
 	 cout << files[i] << endl;
 	 }*/
-#else
-
-#endif
-}
-void cd(string path) {
-	int rc = chdir(path.c_str());
-	if (rc < 0) {
-		cout << "error" << endl;
 	}
-	/*DIR *dir = NULL;
-	 struct dirent entry;
-	 struct dirent *entryPtr = NULL;
-	 int retval = 0;
-	 unsigned count = 0;
-	 char pathName[PATH_MAX + 1];
-
-	 dir = opendir(theDir);
-	 if (dir == NULL) {
-	 cout << ("Error opening %s: %s", theDir);
-	 }
-	 retval = readdir_r(dir, &entry, &entryPtr);
-	 while (entryPtr != NULL) {
-	 ;
-
-	 if ((strncmp(entry.d_name, ".", PATH_MAX) == 0)
-	 || (strncmp(entry.d_name, "..", PATH_MAX) == 0)) {
-	 retval = readdir_r(dir, &entry, &entryPtr);
-	 continue;
-	 }
-	 }*/
+#else
+void ls(string directory)
+{
+	WIN32_FIND_DATA ffd;
+	HANDLE hFind = INVALID_HANDLE_VALUE;
+	directory += "\\*";
+	hFind = FindFirstFile(directory.c_str(), &ffd);
+	if (INVALID_HANDLE_VALUE == hFind)
+	{
+		cout << "We couldn't find such directory" << endl;
+	}
+	else
+	{
+		do
+		{
+			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				cout << ffd.cFileName << TEXT(" <DIR>\n");
+			}
+			else
+			{
+				cout << ffd.cFileName << TEXT(" \n");
+			}
+		} while (FindNextFile(hFind, &ffd) != 0);
+	}
 }
+#endif
+//void cd(string path) {
+//	int rc = _chdir(path.c_str());
+//	if (rc < 0) {
+//		cout << "error" << endl;
+//	}
+//	DIR *dir = NULL;
+//	 struct dirent entry;
+//	 struct dirent *entryPtr = NULL;
+//	 int retval = 0;
+//	 unsigned count = 0;
+//	 char pathName[PATH_MAX + 1];
+//
+//	 dir = opendir(theDir);
+//	 if (dir == NULL) {
+//	 cout << ("Error opening %s: %s", theDir);
+//	 }
+//	 retval = readdir_r(dir, &entry, &entryPtr);
+//	 while (entryPtr != NULL) {
+//	 ;
+//
+//	 if ((strncmp(entry.d_name, ".", PATH_MAX) == 0)
+//	 || (strncmp(entry.d_name, "..", PATH_MAX) == 0)) {
+//	 retval = readdir_r(dir, &entry, &entryPtr);
+//	 continue;
+//	 }
+//	 }
+//}
 void pwd() {
 	char buffer[MAXPATHLEN];
 #ifdef _unix_
@@ -173,7 +250,7 @@ int readmp3(const char *path) {
 	fileName = (char*) path;
 	ifstream mp3File;
 	char buffer[mp3TagSize + 1];
-	//strcpy(path, fileName.c_str());
+	//strcpy_s_s_s_s_s_s_s(path, fileName.c_str());
 	//cout<<fileName;
 
 	//cin.getline(fileName, fileNameLength);
@@ -209,16 +286,22 @@ int readmp3(const char *path) {
 	mp3File.close();
 }
 int main() {
+	string dir = "C://";
 	string command;
 	while (command != "exit") {
 		getline(cin, command);
 		if (command.find("ls") == 0) {
+#ifdef _unix_
 			ls();
+#else 
+			ls(dir);
+#endif 
 		}
-		if (command == "pwd") {
+		else if (command == "pwd") {
 			pwd();
-		} else if (command.find("cd") == 0) {
-			cd(command.substr(command.find(" ") + 1));
+		} 
+		else if (command.find("cd") == 0) {
+			cd(dir,command.substr(command.find(" ") + 1));
 
 		}
 		if (command.find("info") == 0) {

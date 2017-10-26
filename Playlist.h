@@ -15,7 +15,6 @@ public:
 	Playlist(string _name);
 	Playlist(string _directory, string _name);
 	void get_playlist();
-	void songsToFile(string _name);
 	Playlist& operator-=(string _file);
 	Playlist& operator-(string _directory);
 	Playlist& operator-=(const Playlist& ob);

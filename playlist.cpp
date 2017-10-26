@@ -41,7 +41,7 @@ public:
 			do
 			{
 				string FileName;
-				strcpy(buffer, ffd.cFileName);
+				strcpy_s(buffer, ffd.cFileName);
 				FileName.assign(buffer);
 				if (FileName.find(".mp3") != string::npos)
 				{
@@ -93,7 +93,7 @@ public:
 			do
 			{
 				string FileName;
-				strcpy(buffer, ffd.cFileName);
+				strcpy_s(buffer, ffd.cFileName);
 				FileName.assign(buffer);
 				if (FileName.find(".mp3") != string::npos)
 				{
@@ -160,7 +160,7 @@ public:
 			do
 			{
 				string FileName;
-				strcpy(buffer, ffd.cFileName);
+				strcpy_s(buffer, ffd.cFileName);
 				FileName.assign(buffer);
 				if (FileName.find(".mp3") != string::npos)
 				{
