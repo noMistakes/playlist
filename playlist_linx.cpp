@@ -17,7 +17,8 @@ void cd(string path);
 string pwd();
 vector<string> Find_file_mp3();
 int Filter_mp3(const struct dirent * d);
-Playlist::Playlist() {
+Playlist::Playlist() :
+		name(" ") {
 }
 string Playlist::getname() const {
 	return this->name;
@@ -36,9 +37,33 @@ void Playlist::CreatePlaylist() {
 	file << "#EXTM3U";
 	//file.close();
 }
-;
+
+void Playlist::DeleteSong(string song_name) {
+	string line;
+	fstream file(getname().c_str());
+
+	int line_iter = 0;
+	vector<string> strings;
+	while (getline(file, line)) {
+		if (line.find(song_name)== string::npos) {
+			strings.push_back(line);
+		} else {
+			strings.pop_back();
+		}
+		line_iter++;
+	}
+	file.close();
+	file.open(getname().c_str(), std::fstream::out | std::fstream::trunc);
+	for(int i=0;i<strings.size();i++){
+		file<<strings[i].c_str();
+	}
+	file.clear();
+}
 Playlist::~Playlist() {
 
+}
+void Playlist::DeletePlaylist(string playlist_name) {
+	remove(playlist_name.c_str());
 }
 int Playlist::AddSong(string song_name) {
 	vector<string> mp3list = Find_file_mp3();
@@ -214,11 +239,20 @@ int main() {
 			Playlist obj1(playlist_name);
 			obj1.CreatePlaylist();
 		}
-		if (command.find("playlist_addsong") == 0) {
+		if (command.find("addsong") == 0) {
 			command = command.substr(command.find(" ") + 1);
 			Playlist obj1(playlist_name);
 			obj1.AddSong(command);
-
+		}
+		if (command.find("deletesong") == 0) {
+			command = command.substr(command.find(" ") + 1);
+			Playlist obj1(playlist_name);
+			obj1.DeleteSong(command);
+		}
+		if (command.find("playlist_delete") == 0) {
+			command = command.substr(command.find(" ") + 1);
+			Playlist obj1(playlist_name);
+			obj1.DeletePlaylist(command);
 		}
 	}
 	return 0;
