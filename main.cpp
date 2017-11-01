@@ -160,7 +160,53 @@ void main()
 				P1.get_playlist();
 			}
 		}
-	
+		else if (command.find("add") == 0)
+		{
+			Playlist P3(path, "minus2");
+			Playlist P2(path, "minus");
+			if (command.find("_file") == 4 && command.find(".mp3") != string::npos)
+			{
+				P2 += command.substr(11);
+			}
+			else if (command.find("_playlist") == 4)
+			{
+				P2 += P3;
+			}
+			else
+			{
+				P2 + path;
+			}
+			P2.get_playlist();
+		}
+		else if (command.find("remove") == 0)
+		{
+			Playlist P3("c:\\Test\\", "minus2");
+			Playlist P2(path, "minus");
+			if (command.find("_file") == 5)
+			{
+				P2 -= command.substr(11);
+			}
+			else if (command.find("_playlist") == 5)
+			{
+				P2 -= P3;
+			}
+			P2.get_playlist();
+		}
+
+		else if (operation.find("help") == 0)
+		{
+			cout << "ls" << endl;
+			cout << "cd .." << endl;
+			cout << "cd folder\\\\" << endl;
+			cout << "cd <full_adress>\\\\" << endl;
+			cout << "create <PlaylistName>" << endl;
+			cout << "create_null <PlaylistName>" << endl;
+			cout << "add_file <full_adress.mp3>" << endl;
+			cout << "add_folder" << endl;
+			cout << "add_playlist" << endl;
+			cout << "remove_file <full_adress.mp3>" << endl;
+			cout << "remove_playlist" << endl;
+		}
 		else
 		{
 			cout << "Error!" << endl;
